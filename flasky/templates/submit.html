@@ -1,0 +1,21 @@
+{% extends 'main.html' %}
+
+{% block header %}
+  <h1>{% block title %}~Submit A Message~{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+      <label for="message">Your message:</label>
+      <input type="text" name="message" id="message">
+      <br>
+      <label for="name">Your name:   </label>
+      <input type="text" name="name" id="name">
+      <br>
+      <!--submit button zukuri-->
+      <input type="submit" value="Submit">
+  </form>
+  {% if thanks %}
+  Thank you for entering a message:)
+  {% endif %}
+{% endblock %}

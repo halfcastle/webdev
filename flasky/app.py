@@ -1,91 +1,57 @@
-'''
-In this example, we are going to look at creating, serving, and deploying a *very simple* webapp. In the following several lecture, we'll see how to add some interesting interactivity to our app. 
 
-# Prerequisites
+from flask import Flask, render_template, request, g
+import sqlite3
 
-- You need to have the flask package installed in your PIC16B Anaconda environment. 
-- You need a Heroku account.
-- You need the Heroku command line interface: 
-    - To install, at the command line (for MacOS)
-    brew tap heroku/brew && brew install heroku
-
-- At the command line, run 
-    conda activate PIC16B
-
-# Local Preview
-
-At the command line: 
-
-export FLASK_ENV=development; flask run
-
-# Deployment
-
-*Note*: these notes are written for the version of the app that Phil is using, which is indeed called pic16b-minimal-demo. In order to make your own version, you would need to give the app a different name (because one with this name already exists on the internet now).
-
-Sign up for Heroku, create app called pic16b-minimal-demo
-
-```
-heroku login
-heroku git:remote -a pic16b-minimal-demo
-
-git add *.
-git commit -m'add files for heroku'
-git push heroku
-```
-
-Then, the website is at 
-https://pic16b-minimal-demo.herokuapp.com
-
-    
-# Sources
-
-This set of lecture notes is based in part on previous materials developed by [Erin George](https://www.math.ucla.edu/~egeo/) (UCLA Mathematics) and the tutorial [here](https://stackabuse.com/deploying-a-flask-application-to-heroku/). 
-'''
-
-from flask import Flask, render_template, request
 app = Flask(__name__)
 
 @app.route("/")
-# simplest possible approach
 def main():
-    return render_template("main_better.html")
+    return render_template("main.html")
+    #return "hi there"
 
-@app.route("/ask/", methods = ["POST", "GET"]) #ask users a question
-#send data to webpage, webpage sends data to us.
-def ask():
-  if request.method == "GET":
-    return render_template("ask.html")
+
+def get_message_db():
+  if 'message_db' not in g:
+    g.message_db = sqlite3.connect("messages_db.sqlite")
+  cmd = "CREATE TABLE IF NOT EXISTS messages (id INT, handle TEXT, message TEXT)"
+  cursor = g.message_db.cursor()
+  cursor.execute(cmd)
+
+  return g.message_db
+
+def insert_message(request):
+  messagey=request.form["message"]
+  namey=request.form["name"]
+  db=get_message_db()
+  cursor = db.cursor()
+  cursor.execute("SELECT COUNT(*) FROM messages;")
+  row_n=cursor.fetchone()[0] + 1 #setting id number as 1+number of rows
+  cursor.execute("INSERT INTO messages (id, message, handle) VALUES (?, ?, ?)", (row_n, messagey, namey))
+  db.commit()
+  db.close()
+
+@app.route('/submit/', methods=['POST', 'GET'])
+def submit():
+  if request.method == 'GET':
+    return render_template('submit.html')
   else:
-    return render_template("ask.html", name=request.form["name"],
-    student=request.form["student"])
-    #request: interactions with the webapp
-    #name and student are variables from ask.html
-@app.route("/profile/<name>/")
-def hello_name(name):
-  return render_template("profile.html", name=name)
-# slightly less trivial
-# def main():
-#     return render_template("main.html")
+    insert_message(request)
+    return render_template("submit.html", thanks=True)
+    #also returns message thanking user for their submissions
 
-# A little fancier
+def random_messages(n):
+  db = get_message_db()
+  cursor = db.cursor()
+  cursor.execute("SELECT COUNT(*) from messages")
+  row_n=cursor.fetchone()[0]
+  if n>row_n:
+    n=row_n
+  randMessages=cursor.execute(f"SELECT * FROM messages ORDER BY RANDOM() LIMIT {n}").fetchall()
+  db.close()
+  return randMessages
 
-# @app.route("/")
-
-#def main():
-  #  return render_template("main_better.html")
-
-# getting basic user data
-#@app.route('/ask/', methods=['POST', 'GET'])
-#def ask():
-    #if request.method == 'GET':
-  #      return render_template('ask.html')
-  #  else:
-  #      try:
-  #          return render_template('ask.html', name=request.form['name'], student=request.form['student'])
-    #    except:
-   #         return render_template('ask.html')
-
-# 
-#@app.route('/profile/<name>/')
-#def hello_name(name):
-  #  return render_template('profile.html', name=name)
+@app.route('/view/')
+def viewy():
+  display=random_messages(5)
+  return render_template("view.html", messages=display)
+ 

@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+
+{% block header %}
+  <h1>{% block title %}~Some Cool Messages~{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<ul>
+    {% for Mes in messages %}
+      <br>
+        <b>{{Mes[1]}}</b>
+        <br> 
+        {{Mes[2]}}
+    {% endfor %}
+</ul>
+{% endblock %}

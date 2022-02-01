@@ -1,3 +1,16 @@
 <!doctype html>
-<title>PIC16B Website</title>
-<p>Hello! This html is from a separate HTML file.</p>
+<title>{% block title %}{% endblock %} - Message Bank</title>
+<nav>
+    <h1> Random Message Bank! </h1>
+    <!-- <b>Navigation:</b> -->
+    <ul>
+        <li><a href="{{ url_for('submit') }}">Submit a message</a></li>
+        <li><a href="{{ url_for('viewy') }}">View messages</a></li>
+    </ul>
+</nav>
+<section class="content">
+    <header>
+      {% block header %}{% endblock %}
+    </header>
+    {% block content %}{% endblock %}
+  </section>
