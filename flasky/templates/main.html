@@ -2,6 +2,7 @@
 <title>{% block title %}{% endblock %} - Message Bank</title>
 <nav>
     <h1> Random Message Bank! </h1>
+    <link rel="stylesheet" href = "{{url_for('static', filename = 'style.css')}}">
     <!-- <b>Navigation:</b> -->
     <ul>
         <li><a href="{{ url_for('submit') }}">Submit a message</a></li>
